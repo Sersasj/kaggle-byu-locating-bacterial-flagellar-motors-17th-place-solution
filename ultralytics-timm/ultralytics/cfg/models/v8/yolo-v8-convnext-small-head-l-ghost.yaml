@@ -1,0 +1,33 @@
+# Parameters
+nc: 80
+scales:
+  n: [1.0, 1.0, 768]  # scale doesn't matter here since we use a fixed-size backbone
+
+# Backbone using ConvNeXt-Small (from timm)
+backbone:
+  - [-1, 1, Timm, [768, 'convnext_small.in12k_ft_in1k', True, True, 0, True]] # 0
+  - [0, 1, Index, [192, 1]]   # 1 - P3 → 192 ch @ 28×28
+  - [0, 1, Index, [384, 2]]   # 2 - P4 → 384 ch @ 14×14
+  - [0, 1, Index, [768, 3]]   # 3 - P5 → 768 ch @ 7×7
+  - [-1, 1, SPPF, [768, 5]]   # 4
+  - [-1, 2, C2PSA, [768]]     # 5
+
+# Head adjusted to match P3/P4/P5 input channels
+head:
+  - [5, 1, nn.Upsample, [None, 2, "nearest"]]       # upsample P5
+  - [[-1, 2], 1, Concat, [1]]                       # cat with P4 (384)
+  - [-1, 3, C3Ghost, [384]]                             # now using 384 ch
+
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]      # upsample
+  - [[-1, 1], 1, Concat, [1]]                       # cat with P3 (192)
+  - [-1, 3, C3Ghost, [192]]                             # 192 ch
+
+  - [-1, 1, GhostConv, [192, 3, 2]]                      # downsample to P4 size
+  - [[-1, -6], 1, Concat, [1]]                      # concat with previous P4 path
+  - [-1, 3, C3Ghost, [384]]
+
+  - [-1, 1, GhostConv, [384, 3, 2]]                      # downsample to P5 size
+  - [[-1, 5], 1, Concat, [1]]                       # concat with P5
+  - [-1, 3, C3Ghost, [768]]
+
+  - [[11, 14, 17], 1, Detect, [nc]]  # Detect(P3, P4, P5)
