@@ -1,0 +1,3 @@
+[submodule "ultralytics-timm"]
+	path = ultralytics-timm
+	url = git@github.com:DoubleY-BEGC2024/ultralytics-timm.git
