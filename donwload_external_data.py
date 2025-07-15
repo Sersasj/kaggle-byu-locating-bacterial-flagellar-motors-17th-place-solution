@@ -10,11 +10,10 @@ from cryoet_data_portal import Client, Dataset, Run
 from multiprocessing import Pool, cpu_count
 import functools
 
-# Define constants
 TRUST = 4  # Number of slices above and below center slice (total 2*TRUST + 1 slices)
 
 
-labels_df = pd.read_csv("/home/sersasj/BYU---Locating-Bacterial-Flagellar-Motors-2025/labels_extra.csv")
+labels_df = pd.read_csv("labels_extra.csv")
 
 total_motors = len(labels_df)
 print(f"Total number of motors in the dataset: {total_motors}")
@@ -51,17 +50,14 @@ def process_single_tomogram(tomo_id, tmp_dir, out_dir, modified_labels_df):
     else:
         run = run[0]
         
-    # Check if tomogram is already downloaded
     if os.path.exists(os.path.join(out_dir, str(tomo_id))):
         print(f"Skipping already processed tomogram: {tomo_id}")
         return None
         
     try:
-        # Create temporary directory for this process
         process_tmp_dir = os.path.join(tmp_dir, f"tmp_{tomo_id}")
         os.makedirs(process_tmp_dir, exist_ok=True)
         
-        # Download tomogram
         tomo = run.tomograms[0]
         tomo.download_omezarr(dest_path=process_tmp_dir)
         
@@ -77,11 +73,9 @@ def process_single_tomogram(tomo_id, tmp_dir, out_dir, modified_labels_df):
             arr = arr.astype("uint8").astype("float32")
 
 
-        # Process tomogram and extract slices
         collector = CziiCollector(tmp_dir=process_tmp_dir, out_dir=out_dir)
         _, tomo_labels = collector.process_tomogram(arr, tomo_id)
         
-        # Save updated labels for this tomogram
         if not tomo_labels.empty:
             tomo_labels.to_csv(
                 os.path.join(out_dir, f"{tomo_id}_labels.csv"), 
@@ -91,7 +85,6 @@ def process_single_tomogram(tomo_id, tmp_dir, out_dir, modified_labels_df):
         
         print(f"Successfully processed: {tomo_id}")
         
-        # Clean up temporary directory
         shutil.rmtree(process_tmp_dir)
         
         return tomo_labels

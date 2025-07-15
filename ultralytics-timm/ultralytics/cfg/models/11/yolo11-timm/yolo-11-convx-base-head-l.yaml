@@ -6,7 +6,6 @@ backbone:
   # 0: full convnextv2 outputs
   - [-1, 1, Timm, [1024, 'convnextv2_base.fcmae_ft_in22k_in1k', True, True, 0, True]]
   
-  # Use layers 2, 3, 4 from the backbone
   - [0, 1, Index, [256, 1]]  # 1: P3 → 256 ch @ 28×28
   - [0, 1, Index, [512, 2]]  # 2: P4 → 512 ch @ 14×14
   - [0, 1, Index, [1024, 3]] # 3: P5 → 1024 ch @ 7×7

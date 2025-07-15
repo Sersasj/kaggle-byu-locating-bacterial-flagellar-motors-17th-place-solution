@@ -37,16 +37,18 @@ np.random.seed(42)
 random.seed(42)
 torch.manual_seed(42)
 
+# more yaml files can be found in the ultralytics-timm/ultralytics/cfg/models/11/yolo11-timm directory
 
-model = YOLO("ultralytics-timm/ultralytics/cfg/models/11/yolo-11-convx-base-head-l_v3_single_scale.yaml")
+# augmentations can be modified in ultralytics-timm/ultralytics/data/augment.py file
+model = YOLO("/home/sersasj/kaggle-byu-locating-bacterial-flagellar-motors-17th-place-solution/yolo11-convx_base_single-scale-config2.yaml")
 
 
-yaml_path = Path("/home/sersasj/BYU---Locating-Bacterial-Flagellar-Motors-2025/combined_dataset/dataset.yaml")  
+yaml_path = Path("./data/dataset.yaml")  
 
 
 results = model.train(
     data=str(yaml_path),
-    epochs=40,
+    epochs=45,
     batch=2,
     imgsz=960,
     optimizer='AdamW',
